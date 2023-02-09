@@ -1,278 +1,192 @@
-#coding=utf-8
-#!/usr/bin/python
-import sys
-sys.path.append('..') 
-from base.spider import Spider
-import json
-import time
-import base64
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# File  : 时钟玩具.py
+# Author: DaShenHan&道长-----先苦后甜，任凭晚风拂柳颜------
+# Date  : 2022/12/8
 
-class Spider(Spider):  # 元类 默认的元类 type
-    def getName(self):
-        return "哔哩哔哩"
-    def init(self,extend=""):
-        print("============{0}============".format(extend))
-        pass
-    def isVideoFormat(self,url):
-        pass
-    def manualVideoCheck(self):
-        pass
-    def homeContent(self,filter):
-        result = {}
-        cateManual = {
-            "胖团和胖圆":"胖团和胖圆",
-            "动态":"动态",
-            "热门":"热门",
-            "排行榜":"排行榜",
-            "zane妈":"zane妈",
-            "相声小品": "相声小品",
-            "林芊妤":"林芊妤",
-            "Zard": "Zard",
-            "玩具汽车": "玩具汽车",
-            "儿童": "儿童",
-            "幼儿": "幼儿",
-            "儿童玩具": "儿童玩具",
-            "昆虫": "昆虫",
-            "动物世界": "动物世界",
-            "纪录片": "纪录片",
-            "搞笑": "搞笑",
-            "假窗-白噪音": "窗+白噪音",
-            "演唱会": "演唱会"
-        }
-        classes = []
-        for k in cateManual:
-            classes.append({
-                'type_name':k,
-                'type_id':cateManual[k]
-            })
-        result['class'] = classes
-        if(filter):
-            result['filters'] = self.config['filter']
-        return result
-    def homeVideoContent(self):
-        result = {
-            'list':[]
-        }
-        return result
-    cookies = ''
-    def getCookie(self):
-        import requests
-        import http.cookies
-        raw_cookie_line = ''
-        simple_cookie = http.cookies.SimpleCookie(raw_cookie_line)
-        cookie_jar = requests.cookies.RequestsCookieJar()
-        cookie_jar.update(simple_cookie)
-        return cookie_jar
-    def get_dynamic(self,pg):
-        result = {}
-        if int(pg) > 1:
-            return result
-        offset = ''
-        videos = []
-        for i in range(0,10):
-            url= 'https://api.bilibili.com/x/polymer/web-dynamic/v1/feed/all?timezone_offset=-480&type=all&page={0}&offset={1}'.format(pg,offset)
-            rsp = self.fetch(url,cookies=self.getCookie())
-            content = rsp.text
-            jo = json.loads(content)
-            if jo['code'] == 0:
-                offset = jo['data']['offset']
-                vodList = jo['data']['items']
-                for vod in vodList:
-                    if vod['type'] == 'DYNAMIC_TYPE_AV':
-                        ivod = vod['modules']['module_dynamic']['major']['archive']
-                        aid = str(ivod['aid']).strip()
-                        title = ivod['title'].strip().replace("<em class=\"keyword\">","").replace("</em>","")
-                        img =  ivod['cover'].strip()
-                        remark = str(ivod['duration_text']).strip()
-                        videos.append({
-                            "vod_id":aid,
-                            "vod_name":title,
-                            "vod_pic":img,
-                            "vod_remarks":remark
-                        })
-        result['list'] = videos
-        result['page'] = pg
-        result['pagecount'] = 9999
-        result['limit'] = 90
-        result['total'] = 999999
-        return result
-    def get_hot(self,pg):
-        result = {}
-        url= 'https://api.bilibili.com/x/web-interface/popular?ps=20&pn={0}'.format(pg)
-        rsp = self.fetch(url,cookies=self.getCookie())
-        content = rsp.text
-        jo = json.loads(content)
-        if jo['code'] == 0:
-            videos = []
-            vodList = jo['data']['list']
-            for vod in vodList:
-                aid = str(vod['aid']).strip()
-                title = vod['title'].strip().replace("<em class=\"keyword\">","").replace("</em>","")
-                img =  vod['pic'].strip()
-                remark = str(vod['duration']).strip()
-                videos.append({
-                    "vod_id":aid,
-                    "vod_name":title,
-                    "vod_pic":img,
-                    "vod_remarks":remark
-                })
-            result['list'] = videos
-            result['page'] = pg
-            result['pagecount'] = 9999
-            result['limit'] = 90
-            result['total'] = 999999
-        return result
-    def get_rank(self):
-        result = {}
-        url= 'https://api.bilibili.com/x/web-interface/ranking/v2?rid=0&type=all'
-        rsp = self.fetch(url,cookies=self.getCookie())
-        content = rsp.text
-        jo = json.loads(content)
-        if jo['code'] == 0:
-            videos = []
-            vodList = jo['data']['list']
-            for vod in vodList:
-                aid = str(vod['aid']).strip()
-                title = vod['title'].strip().replace("<em class=\"keyword\">","").replace("</em>","")
-                img =  vod['pic'].strip()
-                remark = str(vod['duration']).strip()
-                videos.append({
-                    "vod_id":aid,
-                    "vod_name":title,
-                    "vod_pic":img,
-                    "vod_remarks":remark
-                })
-            result['list'] = videos
-            result['page'] = 1
-            result['pagecount'] = 1
-            result['limit'] = 90
-            result['total'] = 999999
-        return result
-    def categoryContent(self,tid,pg,filter,extend):	
-        result = {}
-        if tid == "热门":
-            return self.get_hot(pg=pg)
-        if tid == "排行榜" :
-            return self.get_rank()
-        if tid == '动态':
-            return self.get_dynamic(pg=pg)
-        url = 'https://api.bilibili.com/x/web-interface/search/type?search_type=video&keyword={0}&page={1}'.format(tid,pg)
-        if len(self.cookies) <= 0:
-            self.getCookie()
-        rsp = self.fetch(url,cookies=self.getCookie())
-        content = rsp.text
-        jo = json.loads(content)
-        if jo['code'] != 0:			
-            rspRetry = self.fetch(url,cookies=self.getCookie())
-            content = rspRetry.text		
-        jo = json.loads(content)
-        videos = []
-        vodList = jo['data']['result']
-        for vod in vodList:
-            aid = str(vod['aid']).strip()
-            title = tid + ":" + vod['title'].strip().replace("<em class=\"keyword\">","").replace("</em>","")
-            img = 'https:' + vod['pic'].strip()
-            remark = str(vod['duration']).strip()
-            videos.append({
-                "vod_id":aid,
-                "vod_name":title,
-                "vod_pic":img,
-                "vod_remarks":remark
-            })
-        result['list'] = videos
-        result['page'] = pg
-        result['pagecount'] = 9999
-        result['limit'] = 90
-        result['total'] = 999999
-        return result
-    def cleanSpace(self,str):
-        return str.replace('\n','').replace('\t','').replace('\r','').replace(' ','')
-    def detailContent(self,array):
-        aid = array[0]
-        url = "https://api.bilibili.com/x/web-interface/view?aid={0}".format(aid)
+'''
+动态时钟附带十二时辰显示
+'''
+import turtle  # 导入绘图海龟模块
+import datetime  # 导入日期时间模块
 
-        rsp = self.fetch(url,headers=self.header,cookies=self.getCookie())
-        jRoot = json.loads(rsp.text)
-        jo = jRoot['data']
-        title = jo['title'].replace("<em class=\"keyword\">","").replace("</em>","")
-        pic = jo['pic']
-        desc = jo['desc']
-        typeName = jo['tname']
-        vod = {
-            "vod_id":aid,
-            "vod_name":title,
-            "vod_pic":pic,
-            "type_name":typeName,
-            "vod_year":"",
-            "vod_area":"bilidanmu",
-            "vod_remarks":"",
-            "vod_actor":jo['owner']['name'],
-            "vod_director":jo['owner']['name'],
-            "vod_content":desc
-        }
-        ja = jo['pages']
-        playUrl = ''
-        for tmpJo in ja:
-            cid = tmpJo['cid']
-            part = tmpJo['part']
-            playUrl = playUrl + '{0}${1}_{2}#'.format(part,aid,cid)
+# 十二时辰对照表（地支）
+dizhi = {
+    '23': ['子', '胆经当令, 万籁俱静正好眠'],
+    '0': ['子', '胆经当令, 万籁俱静正好眠'],
+    '1': ['丑', '肝经当令,肝脏藏血不熬夜'],
+    '2': ['丑', '肝经当令,肝脏藏血不熬夜'],
+    '3': ['寅', '肺经当令，肺脏主气好歇息'],
+    '4': ['寅', '肺经当令，肺脏主气好歇息'],
+    '5': ['卯', '大肠经当令，大肠当值宜排便'],
+    '6': ['卯', '大肠经当令，大肠当值宜排便'],
+    '7': ['辰', '胃经当令，食用早餐正当时'],
+    '8': ['辰', '胃经当令，食用早餐正当时'],
+    '9': ['巳', '脾经当令，脾经当值精神足'],
+    '10': ['巳', '脾经当令，脾经当值精神足'],
+    '11': ['午', '心经当令，心主神明当小憩'],
+    '12': ['午', '心经当令，心主神明当小憩'],
+    '13': ['未', '小肠经当令，畅通血管多喝水'],
+    '14': ['未', '小肠经当令，畅通血管多喝水'],
+    '15': ['申', '膀胱经当令，工作学习练身体'],
+    '16': ['申', '膀胱经当令，工作学习练身体'],
+    '17': ['酉', '肾经当令，养经两相宜'],
+    '18': ['酉', '肾经当令，养经两相宜'],
+    '19': ['戌', '心包经当令，心包当令宜散步谈心'],
+    '20': ['戌', '心包经当令，心包当令宜散步谈心'],
+    '21': ['亥', '三焦经当令，温水泡脚助安眠'],
+    '22': ['亥', '三焦经当令，温水泡脚助安眠']
+}
 
-        vod['vod_play_from'] = 'B站'
-        vod['vod_play_url'] = playUrl
+# 获取当前时间
+today = datetime.datetime.today()
 
-        result = {
-            'list':[
-                vod
-            ]
-        }
-        return result
-    def searchContent(self,key,quick):
-        search = self.categoryContent(tid=key,pg=1,filter=None,extend=None)
-        result = {
-            'list':search['list']
-        }
-        return result
-    def playerContent(self,flag,id,vipFlags):
-        # https://www.555dianying.cc/vodplay/static/js/playerconfig.js
-        result = {}
 
-        ids = id.split("_")
-        url = 'https://api.bilibili.com:443/x/player/playurl?avid={0}&cid=%20%20{1}&qn=112'.format(ids[0],ids[1])
-        rsp = self.fetch(url,cookies=self.getCookie())
-        jRoot = json.loads(rsp.text)
-        jo = jRoot['data']
-        ja = jo['durl']
-        
-        maxSize = -1
-        position = -1
-        for i in range(len(ja)):
-            tmpJo = ja[i]
-            if maxSize < int(tmpJo['size']):
-                maxSize = int(tmpJo['size'])
-                position = i
+# 移动一段距离
+def skip(distance):  # 移动方法，不留移动痕迹
+    turtle.penup()  # 抬笔不绘制
+    turtle.forward(distance)  # 移动指定距离
+    turtle.pendown()  # 落笔移动绘制
 
-        url = ''
-        if len(ja) > 0:
-            if position == -1:
-                position = 0
-            url = ja[position]['url']
 
-        result["parse"] = 0
-        result["playUrl"] = ''
-        result["url"] = url
-        result["header"] = {
-            "Referer":"https://www.bilibili.com",
-            "User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36"
-        }
-        result["contentType"] = 'video/x-flv'
-        return result
+def draw_clock_dial():  # 绘制表盘的方法
+    turtle.reset()  # 删除图形归位
+    turtle.hideturtle()  # 隐藏箭头
+    for i in range(60):  # 循环执行60次，一圈为360度所以每一秒的角度为6度
+        skip(160)  # 移动160，相当于表盘圆的半径
+        # 每5秒绘制一个小时刻度
+        if i % 5 == 0:
+            turtle.pensize(7)  # 刻度大小
+            # 画时钟
+            turtle.forward(20)  # 小时刻度的长度为20
+            if i == 0:  # 判断第一个位置为12点
+                # 写入数字12
+                turtle.write(12, align='center', font=('Courier', 14, 'bold'))
+            elif i == 25 or i == 30 or i == 35:  # 5、6、7
+                skip(25)  # 避免与刻度重叠，所以多移动一段距离
+                # 根据i除以5获取，5点、6点、7点并写入对应的数字
+                turtle.write(int(i / 5), align='center', font=('Courier', 14, 'bold'))
+                skip(-25)  # 回到原位置
+            else:
+                # 根据i除以5获取其它时间的数字并写入
+                turtle.write(int(i / 5), align='center', font=('Courier', 14, 'bold'))
+            skip(-20)  # 复原小时刻度的位置
+        else:
+            turtle.pensize(1)  # 将画笔大小设置为1
+            turtle.dot()  # 绘制分钟刻度的小圆点
+        skip(-160)  # 回到中心位置
+        turtle.right(6)  # 向右旋转6度
 
-    config = {
-        "player": {},
-        "filter": {}
-    }
-    header = {}
 
-    def localProxy(self,param):
-        return [200, "video/MP2T", action, ""]
+def draw_shichen_clock_dial(shichen):  # 绘制十二时辰表盘的方法
+    today = datetime.datetime.today()
+    forenoon, afternoon = {}, {}
+    for i in shichen.items():
+        if int(i[0]) >= 12:
+            afternoon[i[0]] = i[1]
+        else:
+            forenoon[i[0]] = i[1]
 
+    # 做个判断，大于12点用后半日时辰
+    if today.hour >= 12:
+        show_shichen_time = afternoon
+    else:
+        show_shichen_time = forenoon
+
+    for i in show_shichen_time.items():  # 循环执行12次，一圈为360度所以每次的角度为30度
+        skip(240)
+        turtle.write(i[1][0], align='center', font=('Courier', 16, 'bold'))
+        skip(-240)  # 回到中心位置
+        turtle.right(30)  # 向右旋转30度
+
+
+def draw_old_clock_dial():  # 绘制表盘的当前时辰和当值经络
+    turtle.hideturtle()  # 隐藏箭头
+    skip(100)
+    turtle.color('red')
+    shichen = get_sc(today.hour)
+    turtle.write('当前：' + shichen[0], align='center', font=('Courier', 16, 'bold'))
+    skip(-380)
+    turtle.write(shichen[1], align='center', font=('Courier', 16, 'bold'))
+    skip(280)  # 回中心点位置
+
+
+# 获取时间对应的具体时辰
+def get_sc(hour):
+    shichen = []
+    if hour >= 0:
+        hour = str(hour)
+        shichen.append(dizhi.get(hour)[0] + '时')
+        shichen.append(dizhi.get(hour)[1])
+    else:
+        shichen = '时间参数错误'
+    return shichen
+
+
+def get_week(t):  # 获取星期的方法
+    week = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
+    return week[t.weekday()]  # 返回当天的星期
+
+
+def create_pointer(length, name, color='red'):  # 创建指针方法
+    turtle.reset()  # 删除图形归位
+    skip(-length * 0.1)  # 抬笔移动指定距离
+    turtle.begin_poly()  # 记录多边形
+    turtle.forward(length * 1.1)  # 绘制指定长度的指针
+    turtle.end_poly()  # 停止记录多边形
+    # 注册多边形状
+    turtle.register_shape(name, turtle.get_poly())
+
+
+def init_pointer():  # 初始化指针
+    global secHand, minHand, hurHand, printer
+    turtle.mode("logo")  # 重置Turtle指向上
+    create_pointer(135, "secHand")  # 创建秒针图形
+    create_pointer(110, "minHand")  # 创建分针图形
+    create_pointer(80, "hurHand")  # 创建时针图形
+    secHand = turtle.Turtle()  # 创建秒针turtle对象
+    secHand.shape("secHand")  # 创建指定秒针名称的形状
+    minHand = turtle.Turtle()  # 创建分针turtle对象
+    minHand.shape("minHand")  # 创建指定分针名称的形状
+    hurHand = turtle.Turtle()  # 创建时针turtle对象
+    hurHand.shape("hurHand")  # 创建指定时针名称的形状
+    for hand in secHand, minHand, hurHand:  # 循环遍历三个指针
+        hand.shapesize(1, 1, 5)  # 设置形状拉伸大小和轮廓线
+        hand.speed(0)  # 设置速度为最快
+    printer = turtle.Turtle()  # 创建绘制文字的Turtle对象
+    printer.hideturtle()  # 隐藏箭头
+    printer.penup()  # 抬笔
+
+
+def move_pointer():  # 移动指针的方法
+    # 不停的获取时间
+    t = datetime.datetime.today()
+    second = t.second + t.microsecond * 0.000001  # 计算移动的秒
+    minute = t.minute + second / 60  # 计算移动的分
+    hour = t.hour + minute / 60  # 计算移动的小时
+    secHand.setheading(6 * second)  # 设置秒针的角度
+    minHand.setheading(6 * minute)  # 设置分针的角度
+    hurHand.setheading(30 * hour)  # 设置时针的角度
+    turtle.tracer(False)  # 关闭绘画效果
+    printer.forward(65)  # 向上移动65
+
+    # 绘制星期
+    printer.write(get_week(t), align="center", font=("Courier", 14, "bold"))
+    printer.back(130)  # 倒退130
+
+    # 绘制年月日
+    printer.write(t.strftime('%Y-%m-%d'), align="center", font=("Courier", 14, "bold"))
+    printer.home()  # 归位
+    turtle.tracer(True)  # 开启绘画效果
+    turtle.ontimer(move_pointer, 10)  # 10毫秒后调用move_pointer()方法
+
+
+if __name__ == '__main__':
+    turtle.setup(650, 650)  # 创建窗体大小
+    init_pointer()  # 调用初始化指针的方法
+    turtle.tracer(False)  # 关闭绘画效果
+    draw_clock_dial()  # 绘制表盘
+    draw_shichen_clock_dial(dizhi)
+    draw_old_clock_dial()  # 绘制十二时辰表盘
+    move_pointer()  # 调用移动指针的方法
+    turtle.mainloop()  # 不关闭窗体

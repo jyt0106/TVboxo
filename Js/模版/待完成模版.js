@@ -1,3 +1,168 @@
+// 道长 drpy仓库 https://gitcode.net/qq_32394351/dr_py
+// 道长 drpy安卓本地搭建说明 https://gitcode.net/qq_32394351/dr_py/-/blob/master/%E5%AE%89%E5%8D%93%E6%9C%AC%E5%9C%B0%E6%90%AD%E5%BB%BA%E8%AF%B4%E6%98%8E.md
+// 道长 drpy写源 模板规则说明 https://gitcode.net/supertlo/dr_py#%E6%A8%A1%E6%9D%BF%E8%A7%84%E5%88%99%E8%AF%B4%E6%98%8E
+// 道长 drpy写源 套模模版 https://gitcode.net/qq_32394351/dr_py/-/raw/master/js/%E6%A8%A1%E6%9D%BF.js
+// 道长 drpy写源 影片教程 http://101.34.67.237:5244/%E6%95%99%E8%82%B2/drpy
+// 道长 drpy写源 影片教程(m3u8切片) https://freedrpy.run.goorm.io/txt/jc/playlist.m3u8
+// 海阔下载 https://haikuo.lanzoui.com/u/GoldRiver
+// Pluto Player官方TG https://t.me/PlutoPlayer
+// Pluto Player官方TG https://t.me/PlutoPlayerChannel
+
+
+
+var rule={
+title:'1985影视',
+host:'https://www.1985.one',
+url:'/vodshow/id/fyclass/page/fyclass.html',
+searchUrl:'/vodsearch/page/fyclass/wd/**.html',
+searchable:2,
+quickSearch:0,
+filterable:0,
+headers:{'User-Agent':'MOBILE_UA', },
+class_name:'电影&电视剧&综艺&动漫&B站',
+class_url:'1&2&3&4&51',
+play_parse:true,
+lazy:'',
+limit:6,
+推荐:'.module-list;.module-items&&.module-item;a&&title;img&&data-src;.module-item-text&&Text;a&&href',
+double:true, // 推荐内容是否双层定位
+一级:'.module-items .module-item;a&&title;img&&data-src;.module-item-text&&Text;a&&href',
+二级:{"title":"h1&&Text;.video-info-aux&&div&&a:eq(0)&&Text","img":".module-item-pic&&img&&data-src","desc":";.video-info-aux&&a:eq(1)&&Text;.video-info-aux&&a:eq(2)&&Text;.video-info-items:eq(1)&&Text;.video-info-items:eq(0)&&Text","content":".video-info-content&&Text","tabs":".module-tab-item.tab-item","lists":".module-player-list:eq(#id)&&.scroll-content&&a"},
+搜索:'.module-items .module-search-item;a&&title;img&&data-src;.video-serial&&Text;a&&href',
+}
+
+//资源一般
+var rule={     
+    title:'320影视',
+    //host:'https://www.xdn8.com',
+    host:'https://www.yucjit.org',
+    //host:'https://320m.com',
+    url:'/index.php/vod/show/id/fyclass/page/fypage.html',
+    searchUrl:'/index.php/vod/search/page/fypage/wd/**.html',
+    searchable:2,//是否启用全局搜索,
+    quickSearch:0,//是否启用快速搜索,
+    filterable:0,//是否启用分类筛选,
+    //class_parse:'.nav-menu-items&&li;a&&Text;a&&href;.*/(.*?).html',
+    //cate_exclude:'演员',
+    class_name:'电影&电视剧&综艺&动漫&纪录片&国产剧&港台剧&日韩剧&欧美剧',
+    class_url:'1&2&3&4&34&13&14&16&15',  
+    推荐:'.module-poster-item;a&&title;.lazyload&&data-original;.module-item-note&&Text;a&&href',
+    一级:'.module-poster-item;a&&title;.lazyload&&data-original;.module-item-note&&Text;a&&href',
+    //二级:{"title":"h1&&Text;","img":".lazyload&&data-original","desc":";;.module-info-item:eq(4) p&&Text;.module-info-item:eq(3) div&&Text;.module-info-item:eq(1) a&&Text","content":".show-desc&&Text","tabs":'#y-playList&&span',"lists":".module-play-list:eq(#id) a"},     
+    二级:{"title":"h1&&Text;.module-info-tag-link:eq(2)&&Text","img":".lazyload&&data-original","desc":".module-info-content&&.module-info-item:eq(-2)&&Text;.module-info-content&&.module-info-item:eq(-2)&&Text;.module-info-content&&.module-info-item:eq(-2)&&Text;.module-info-content&&.module-info-item:eq(2)&&.module-info-item-content&&Text;.module-info-content&&.module-info-item:eq(1)&&.module-info-item-content&&Text","content":".module-info-introduction-content&&Text","tabs":".module-tab-items-box:eq(0)&&.module-tab-item","lists":".module-list:eq(#id)&&.module-play-list-content a"}, 
+    搜索:'.module-card-item;.module-card-item-title&&Text;.lazyload&&data-original;.module-item-note&&Text;a&&href', 
+}
+
+
+//嗅探不出
+var rule={     
+    title:'野荷塘',
+    host:'https://www.yehetang.cc',
+    url:'/mj/fyclass-fypage.html',
+    searchUrl:'/vodsearch/**----------fypage---.html',
+    searchable:2,//是否启用全局搜索,
+    quickSearch:0,//是否启用快速搜索,
+    filterable:0,//是否启用分类筛选,
+    //class_parse:'.nav-menu-items&&li;a&&Text;a&&href;.*/(.*?).html',
+    //cate_exclude:'演员',
+    class_name:'电影&电视剧&综艺&动漫',
+    class_url:'1&2&3&4',  
+    推荐:'.swiper-slide.vod_item;.vod_name&&Text;img&&data-src;*;a&&href',
+    一级:'.vod_item.mdui-col;.star-up-name&&Text;img&&data-original;.vod_remarks&&Text;a&&href',
+    //二级:{"title":"h1&&Text;","img":".lazyload&&data-original","desc":";;.module-info-item:eq(4) p&&Text;.module-info-item:eq(3) div&&Text;.module-info-item:eq(1) a&&Text","content":".show-desc&&Text","tabs":'#y-playList&&span',"lists":".module-play-list:eq(#id) a"},     
+    二级:{"title":".title_block&&Text;.module-info-tag-link:eq(2)&&Text","img":"img&&data-original","desc":".module-info-content&&.module-info-item:eq(-2)&&Text;.module-info-content&&.module-info-item:eq(-2)&&Text;.module-info-content&&.module-info-item:eq(-2)&&Text;.module-info-content&&.module-info-item:eq(2)&&.module-info-item-content&&Text;.module-info-content&&.module-info-item:eq(1)&&.module-info-item-content&&Text","content":".module-info-introduction-content&&Text","tabs":".mdui-panel-item-title","lists":".mdui-panel-item-body:eq(#id)&&a"}, 
+    搜索:'.module-card-item;.module-card-item-title&&Text;.lazyload&&data-original;.module-item-note&&Text;a&&href', 
+}
+
+
+
+
+//线路选择从2开始
+var rule = {
+    title:'乐猪TV',
+    host:'http://www.lezhutv.com',
+    // homeUrl:'/',
+    url:'/type/fyclass-fypage.html',
+    searchUrl:'/search-pg-fypage-wd-**.html',
+    searchable:2,
+    quickSearch:0,
+    headers:{
+        'User-Agent':'UC_UA'
+    },
+    timeout:5000,
+    class_parse:'div.nav a;a&&Text;a&&href;/(\\d.+).html',
+    play_parse:true,
+    lazy:'',
+    limit:5,
+    推荐:'.tbox2;*;*;*;*;*',
+    double:true, // 推荐内容是否双层定位
+    一级:'ul.tbox_m2 li;a&&title;a&&data-original;span&&Text;a&&href',
+    二级:{"title":".data h4&&Text;.yac&&Text","img":".item-lazy&&data-original","desc":";;;.act&&Text;.dir&&Text","content":".tbox_js&&Text","tabs":".tbox2&&h3","lists":".list_block.show:eq(#id) li"},
+    //二级:{"title":".data h4--i&&Text;.yac&&Text","img":".item-lazy&&data-original","desc":";;;.act&&Text;.dir&&Text","content":".tbox_js&&Text","tabs":"js:pdfa=jsp.pdfa;TABS=pdfa(html,'.tbox_t h3').map(function(it,idex){return '线路'+(idex+1)})","lists":"ul.list_block:eq(#id) li"},
+    搜索:'ul.tbox_m li;*;*;*;*',
+	
+}
+
+//线路选择从2开始
+var rule={
+    title:'789影院',
+    host:'https://www.789dyhd.com',
+    //host:'https://www.666dyhd.com',
+//https://www.789dyhd.com/index.php/vod/type/id/2/page/2.html
+//https://www.789dyhd.com/index.php/vod/search/page/2/wd/ai.html
+//https://www.789dyhd.com/index.php/vod/detail/id/1669606.html
+    // homeUrl:'/',
+    url:'/index.php/vod/type/id/fyclass/page/fypage.html',
+    searchUrl:'/index.php/vod/search/page/fypage/wd/**.html',
+    searchable:2,//是否启用全局搜索,
+    quickSearch:0,//是否启用快速搜索,
+    filterable:0,//是否启用分类筛选,
+    headers:{//网站的请求头,完整支持所有的,常带ua和cookies
+        'User-Agent':'MOBILE_UA',
+        // "Cookie": "searchneed=ok"
+    },
+    //class_parse:'.conch-nav&&ul&&li;a&&Text;a&&href;./(\\d+).html',
+    //cate_exclude:'',
+    class_name:'电影&电视剧&综艺&动漫&记录片&国产剧&港台剧&日韩剧&欧美剧&海外剧',
+    class_url:'1&2&3&4&21&13&14&15&16&22',
+    play_parse:true,
+    lazy:'',
+    limit:6,
+    推荐:'.index-tj-l;ul&&li;a&&title;*;*;a&&href',
+    double:true, // 推荐内容是否双层定位
+    一级:'.index-area.clearfix&&ul&&li;a&&title;img&&data-original;.other&&Text;a&&href',
+    二级:{"title":".lazy&&alt;.other&&Text","img":".ct-l&&img&&data-original","desc":";;.hl-col-xs-12:eq(2)&&Text;.hl-col-xs-12:eq(3)&&Text;.hl-col-xs-12:eq(4)&&Text","content":".hl-content-text&&Text","tabs":".playfrom&&ul&&li","lists":".tab-down:eq(#id)&&.videourl&&ul&&li"},
+    搜索:'.hl-list-wrap&&ul&&li;.hl-item-thumb&&title;.hl-lazy&&data-original;.hl-pic-text&&Text;a&&href',
+}
+
+
+//1. 翻页有问题 2 只有pluto player可以嗅探得出 和瓜子同模版 3 有插入广告
+var rule={
+    title:'如意视频',
+    host:'https://m.rysp.tv',
+    //https://m.guazitv9.com/video/list?channel_id=2&tag=0
+    //https://m.rysp.tv/video/list?channel_id=2
+    //https://rysp.tv/video/search-result?keyword=ai
+    url:'/video/list?channel_id=fyclass&tag=0&data-page=fypage',
+    searchUrl:'/xssearch?q=**&f=_all&p=fypage',
+    searchable:2,//是否启用全局搜索,
+    quickSearch:1,//是否启用快速搜索,
+    filterable:0,//是否启用分类筛选,
+    headers:{'User-Agent':'UC_UA', },
+    play_parse:true,
+    lazy:'',
+    limit:6,
+    class_name:'电影&电视剧&综艺&动漫&纪录片&世界杯',
+    class_url:'1&2&3&4&32&33',
+    推荐:'dd;h5&&Text;img&&originalsrc;p.mark&&Text;a&&href',
+    double:false,
+    一级:'dd;h5&&Text;img&&originalsrc;.mark&&Text;a&&href',
+    二级:{"title":"h1&&Text;.moviedteail_list li&&a&&Text","img":"div.dyimg img&&src","desc":".moviedteail_list li:eq(3) a&&Text;.moviedteail_list li:eq(2) a&&Text;.moviedteail_list li:eq(1) a&&Text;.moviedteail_list li:eq(7) a&&Text;.moviedteail_list li:eq(5) a&&Text","content":".pop-intro-detail&&Text","tabs":".pop-intro.video-pop-source&&ul li","lists":".video-detail-series-bottom.pop-content-list&&ul:eq(#id)&&li a"},
+    搜索:'.search_list&&ul&&li;*;*;*;*',
+}
+//播放地址动态嗅探不出
+
+
 var rule={
     title:'回响影视',
     host:'https://hxys.tv',
